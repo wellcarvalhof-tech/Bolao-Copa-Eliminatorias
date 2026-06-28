@@ -391,6 +391,9 @@ const phLocked=ph=>new Date()>=PHASES[ph].lock;
 const podioLocked=()=>new Date()>=PODIO_LOCK;
 
 // ── SCORING ───────────────────────────────────────────────────────────────────
+function validResult(r){
+  return r && r.home!==undefined && r.home!=="" && r.away!==undefined && r.away!=="" && !isNaN(parseInt(r.home)) && !isNaN(parseInt(r.away));
+}
 function scoreMatch(g,a){
   if(!a||a.home===""||a.away==="") return null;
   const gH=parseInt(g?.home),gA=parseInt(g?.away),aH=parseInt(a.home),aA=parseInt(a.away);
@@ -554,13 +557,13 @@ function renderMatches(){
     games.forEach(m=>{
       const v=S.guesses[m.id]||{};
       const res=S.results[m.id]||{};
-      const pts=res.home!==""?scoreMatch(v,res):null;
+      const pts=validResult(res)?scoreMatch(v,res):null;
       const hv=v.home??"",av=v.away??"";
       const hasTeams=m.home&&m.away;
       const hf=FLAGS[m.home]||"🏳",af=FLAGS[m.away]||"🏳";
       // result row
       let rr="";
-      if(res.home!==""){
+      if(validResult(res)){
         const pc=pts!==null?`pts-${pts}`:"",pl=pts===5?"🎯":pts>=2?"✅":pts===1?"〽️":"❌";
         const qpts=scoreQual(v.qualifier,res.qualifier);
         const qbadge=qpts!==null?`<span class="pts-badge ${qpts===2?"pts-3":"pts-0"}" style="margin-left:4px">${qpts===2?"✅":"❌"} ${qpts}pt</span>`:"";
@@ -581,7 +584,7 @@ function renderMatches(){
           </select>
         </div>`;
       }
-      html+=`<div class="match-card ${res.home!==""?"done":""} ${lk?"lk":""}">
+      html+=`<div class="match-card ${validResult(res)?"done":""} ${lk?"lk":""}">
         <div class="match-meta">${m.date} · ${m.time} (Brasília)</div>
         <div class="match-row">
           <div class="team"><span class="flag">${hf}</span><span class="tname">${m.home||"A definir"}</span></div>
@@ -743,7 +746,7 @@ function viewP(name){
     ms.forEach(m=>{
       const g=p.guesses?.[m.id]||{};
       const res=S.results[m.id]||{};
-      const pts=res.home!==""?scoreMatch(g,res):null;
+      const pts=validResult(res)?scoreMatch(g,res):null;
       const qpts=scoreQual(g.qualifier,res.qualifier);
       const pc=pts!==null?`pts-${pts}`:"";
       const pl=pts===5?"🎯":pts===3||pts===2?"✅":pts===1?"〽️":pts===0?"❌":"";
@@ -792,7 +795,7 @@ function renderResults(){
     html+=`<div style="margin-bottom:24px"><div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--dim);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">${label} ${phLocked(ph)?"🔒":"🟢"}</div>`;
     ms.forEach(m=>{
       const res=S.results[m.id]||{};
-      const done=res.home!==undefined&&res.home!=="";
+      const done=validResult(res);
       const hasTeams=m.home&&m.away;
       const teams=hasTeams?[m.home,m.away]:[];
       const qualOpts=teams.map(t=>`<option value="${t}" ${res.qualifier===t?"selected":""}>${FLAGS[t]||""} ${t}</option>`).join("");
