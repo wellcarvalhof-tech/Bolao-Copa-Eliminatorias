@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolão Copa 2026 — Eliminatórias</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Share+Tech+Mono&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060F1E;--surf:#0D1A2D;--surf2:#132338;--border:#1E3050;
+  --gold:#FFD700;--gold-dim:#8A6E00;--green:#1DB954;--red:#E74C3C;
+  --orange:#FF6E28;--text:#E8EDF5;--dim:#6A8BAA;
+  --mono:'Share Tech Mono',monospace;--sans:'Inter',system-ui,sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
+.app{max-width:680px;margin:0 auto;padding:0 14px 80px}
+
+/* HEADER */
+.hdr{background:var(--surf);border-bottom:2px solid var(--gold-dim);padding:14px;margin:0 -14px 20px;position:sticky;top:0;z-index:10}
+.hdr-inner{display:flex;align-items:center;gap:10px}
+.hdr-logo{font-size:26px}
+h1{font-size:20px;font-weight:900;letter-spacing:-.03em}
+h1 span{color:var(--gold)}
+.hdr-sub{font-size:11px;color:var(--dim);margin-top:1px}
+.btn-row{margin-left:auto;display:flex;gap:6px}
+.hdr-btn{background:none;border:1px solid var(--border);color:var(--dim);padding:5px 10px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--sans);transition:all .15s}
+.hdr-btn:hover{border-color:var(--gold);color:var(--text)}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:100;max-width:340px;text-align:center;display:none}
+.toast.show{display:block}
+.toast.ok{background:#0D2A1A;border:1px solid var(--green);color:var(--green)}
+.toast.err{background:#2A0D0D;border:1px solid var(--red);color:var(--red)}
+
+/* TABS */
+.tabs{display:flex;background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:4px;gap:3px;margin-bottom:20px}
+.tab-btn{flex:1;padding:8px 2px;border:none;border-radius:8px;cursor:pointer;font-family:var(--sans);font-size:11px;font-weight:600;transition:all .15s;background:transparent;color:var(--dim)}
+.tab-btn.active{background:var(--gold);color:#000}
+.tab-btn:hover:not(.active){background:var(--surf2);color:var(--text)}
+
+/* LOGIN */
+.login-wrap{max-width:420px;margin:0 auto}
+.login-card{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:28px 22px;text-align:center}
+.login-icon{font-size:44px;margin-bottom:12px}
+.login-card h2{font-size:20px;font-weight:800;margin-bottom:6px}
+.login-card p{color:var(--dim);font-size:13px;margin-bottom:18px}
+.text-input{width:100%;padding:12px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;font-family:var(--sans);outline:none;margin-bottom:12px}
+.text-input:focus{border-color:var(--gold)}
+.btn-gold{width:100%;padding:13px;background:var(--gold);color:#000;border:none;border-radius:10px;font-size:15px;font-weight:700;font-family:var(--sans);cursor:pointer;transition:opacity .15s}
+.btn-gold:hover{opacity:.88}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed}
+.plist{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.pitem{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surf);border:1px solid var(--border);border-radius:8px;cursor:pointer}
+.pitem:hover{border-color:var(--gold)}
+.pitem-name{font-weight:600;font-size:14px}
+.pitem-info{font-size:12px;color:var(--dim)}
+.or-div{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--dim);font-size:12px}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* PHASE TABS */
+.phase-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.phase-btn{padding:7px 11px;background:var(--surf);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:var(--sans);font-size:11px;font-weight:600;color:var(--dim);transition:all .15s;white-space:nowrap}
+.phase-btn.active{border-color:var(--gold);color:var(--gold);background:#1A1400}
+.phase-btn.lk{opacity:.7}
+
+/* MATCH CARD */
+.phase-hdr-row{display:flex;align-items:center;gap:8px;margin:16px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.phase-hdr-row h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold)}
+.phase-date-lbl{font-size:11px;color:var(--dim);margin-left:auto;font-family:var(--mono)}
+.locked-banner{background:#0D1E10;border:1px solid var(--green);border-radius:10px;padding:12px 16px;font-size:13px;font-weight:700;color:var(--green);margin-bottom:14px;text-align:center}
+.match-card{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.match-card.done{border-color:var(--gold-dim)}
+.match-card.lk{opacity:.85}
+.match-meta{font-size:10px;color:var(--dim);font-family:var(--mono);margin-bottom:8px}
+.match-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}
+.team{display:flex;align-items:center;gap:6px}
+.team-away{flex-direction:row-reverse;justify-content:flex-start}
+.flag{font-size:16px;line-height:1;flex-shrink:0}
+.tname{font-size:12px;font-weight:600;line-height:1.2}
+.score-pair{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.score-inp{width:40px;height:40px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;color:var(--dim);font-family:var(--mono);font-size:20px;font-weight:700;text-align:center;outline:none;-moz-appearance:textfield;appearance:none}
+.score-inp::-webkit-outer-spin-button,.score-inp::-webkit-inner-spin-button{-webkit-appearance:none}
+.score-inp:focus{border-color:var(--gold);color:var(--gold)}
+.score-inp.hv{border-color:var(--gold-dim);color:var(--gold)}
+.score-inp:disabled,.score-inp[readonly]{background:var(--surf2);cursor:not-allowed;color:var(--dim);pointer-events:none}
+.score-sep{color:var(--dim);font-size:16px}
+
+/* QUALIFIER */
+.qual-row{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.qual-lbl{font-size:11px;color:var(--dim);white-space:nowrap;font-weight:600}
+.qual-sel{flex:1;padding:7px 10px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;font-family:var(--sans);outline:none;cursor:pointer}
+.qual-sel:focus{border-color:var(--gold)}
+.qual-sel:disabled{background:var(--surf2);cursor:not-allowed;color:var(--dim)}
+
+/* RESULT ROW */
+.result-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px}
+.result-txt{color:var(--dim);font-family:var(--mono)}
+.pts-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.pts-5{background:#1A1400;color:var(--gold);border:1px solid var(--gold-dim)}
+.pts-3{background:#0D1E10;color:var(--green);border:1px solid var(--green)}
+.pts-2{background:#0D1A2D;color:var(--text);border:1px solid var(--border)}
+.pts-1{background:#1A1400;color:var(--orange);border:1px solid var(--orange)}
+.pts-0{background:#1A0D0D;color:#555;border:1px solid #333}
+
+/* SAVE */
+.save-wrap{position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 80%,transparent);padding:16px 0 12px;margin-top:8px}
+.save-note{text-align:center;font-size:11px;color:var(--dim);margin-top:8px}
+
+/* PÓDIO */
+.podio-card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px 16px;margin-bottom:12px}
+.podio-card h3{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.podio-sel{width:100%;padding:11px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:var(--sans);outline:none;cursor:pointer}
+.podio-sel:focus{border-color:var(--gold)}
+.podio-sel:disabled{background:var(--surf2);cursor:not-allowed;color:var(--dim)}
+.podio-result{margin-top:8px;font-size:12px;color:var(--dim)}
+
+/* RANKING */
+.section-title{font-size:16px;font-weight:800;margin-bottom:14px}
+.rank-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.rl-item{font-size:11px;color:var(--dim)}
+.rank-list{display:flex;flex-direction:column;gap:8px}
+.rank-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surf);border:1px solid var(--border);border-radius:10px}
+.rank-1{border-color:#FFD700;background:#1A1400}
+.rank-2{border-color:#C0C0C0}
+.rank-3{border-color:#CD7F32}
+.rank-me{box-shadow:0 0 0 1.5px var(--gold)}
+.rank-pos{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0}
+.rp-1{background:var(--gold);color:#000}.rp-2{background:#C0C0C0;color:#000}.rp-3{background:#CD7F32;color:#000}.rp-n{background:var(--surf2);color:var(--dim)}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-weight:700;font-size:14px}
+.you-tag{background:var(--gold);color:#000;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.rank-detail{font-size:11px;color:var(--dim);margin-top:3px}
+.rank-pts-val{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--gold)}
+.rank-pts-lbl{font-size:10px;color:var(--dim);text-align:right}
+.view-btn{background:none;border:1px solid var(--border);color:var(--dim);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:var(--sans)}
+.view-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ADMIN */
+.admin-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);cursor:pointer;margin-bottom:16px;user-select:none}
+.admin-toggle input{accent-color:var(--gold)}
+.team-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.team-inp{padding:8px 10px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;font-family:var(--sans);outline:none;width:100%}
+.team-inp:focus{border-color:var(--orange)}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:20px 14px;overflow-y:auto}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--surf);border:1px solid var(--border);border-radius:16px;width:100%;max-width:640px;padding:20px 18px;margin:auto}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-hdr h3{font-size:17px;font-weight:800}
+.modal-close{background:none;border:1px solid var(--border);color:var(--dim);padding:5px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-family:var(--sans)}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surf2);border-radius:8px;margin-bottom:6px;font-size:12px}
+.phase-sep{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+
+.hidden{display:none}
+@media(max-width:420px){.tname{font-size:11px}.flag{font-size:14px}.score-inp{width:36px;height:36px;font-size:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <div class="hdr-inner">
+      <div class="hdr-logo">🏆</div>
+      <div>
+        <h1>Bolão <span>Copa 2026</span></h1>
+        <p class="hdr-sub">Fase Eliminatória · 16 avos até a Final</p>
+      </div>
+      <div class="btn-row">
+        <button class="hdr-btn hidden" id="refresh-btn" onclick="forceRefresh()">🔄</button>
+        <button class="hdr-btn hidden" id="logout-btn" onclick="logout()">↩ Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- LOGIN -->
+  <div id="screen-login">
+    <div class="login-wrap">
+      <div id="plist-sec" class="hidden">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:10px">Participantes</div>
+        <div class="plist" id="plist"></div>
+        <div class="or-div"><span>ou entre com novo nome</span></div>
+      </div>
+      <div class="login-card">
+        <div class="login-icon">🏆</div>
+        <h2>Eliminatórias 2026</h2>
+        <p>Digite seu nome para acessar seus palpites</p>
+        <input class="text-input" id="name-inp" placeholder="Seu nome" maxlength="30" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="btn-gold" id="login-btn" onclick="doLogin()">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="screen-main" class="hidden">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('palpites',this)">⚽ Palpites</button>
+      <button class="tab-btn" onclick="switchTab('podio',this)">🥇 Pódio</button>
+      <button class="tab-btn" onclick="switchTab('ranking',this)">🏆 Ranking</button>
+      <button class="tab-btn" onclick="switchTab('jogos',this)">📋 Jogos</button>
+      <button class="tab-btn" onclick="switchTab('pontos',this)">📖 Pontuação</button>
+    </div>
+
+    <!-- PALPITES -->
+    <div id="tab-palpites">
+      <div class="phase-tabs" id="phase-tabs"></div>
+      <div id="lock-banner" class="locked-banner hidden"></div>
+      <div id="matches-list"></div>
+      <div class="save-wrap hidden" id="save-wrap">
+        <button class="btn-gold" id="save-btn" onclick="savePhase()">💾 Salvar Palpites</button>
+        <p class="save-note">Você pode editar até o início da fase</p>
+      </div>
+    </div>
+
+    <!-- PÓDIO -->
+    <div id="tab-podio" class="hidden">
+      <div class="section-title">🥇 Pódio Final</div>
+      <div id="podio-lock-banner" class="locked-banner hidden">🔒 Palpites de Pódio encerrados</div>
+      <div id="podio-info" style="background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--dim);margin-bottom:16px">
+        Palpite o campeão, vice e terceiro lugar. Trava em <strong style="color:var(--text)">4/Jul às 17h</strong> junto com o início das oitavas de final.
+      </div>
+      <div id="podio-list"></div>
+      <div class="save-wrap hidden" id="podio-save-wrap">
+        <button class="btn-gold" onclick="savePodio()">💾 Salvar Pódio</button>
+      </div>
+    </div>
+
+    <!-- RANKING -->
+    <div id="tab-ranking" class="hidden">
+      <div class="section-title">🏆 Ranking — Eliminatórias</div>
+      <div class="rank-legend">
+        <span class="rl-item"><span style="color:var(--gold)">●</span> 5pts placar exato</span>
+        <span class="rl-item"><span style="color:var(--green)">●</span> 3pts resultado+gol</span>
+        <span class="rl-item"><span style="color:#fff">●</span> 2pts resultado</span>
+        <span class="rl-item"><span style="color:var(--dim)">●</span> 1pt gol parcial</span>
+        <span class="rl-item"><span style="color:var(--orange)">●</span> 2pts classificado</span>
+        <span class="rl-item"><span style="color:var(--gold)">●</span> Pódio: a definir</span>
+      </div>
+      <div class="rank-list" id="rank-list"></div>
+    </div>
+
+    <!-- JOGOS / ADMIN -->
+    <div id="tab-jogos" class="hidden">
+      <div class="section-title">📋 Resultados Oficiais</div>
+      <label class="admin-toggle">
+        <input type="checkbox" id="admin-chk" onchange="toggleAdmin()"> Modo admin (senha exigida)
+      </label>
+      <div id="results-list"></div>
+    </div>
+  </div>
+
+  <!-- TAB PONTUAÇÃO -->
+    <div id="tab-pontos" class="hidden">
+      <div class="section-title">📖 Regras de Pontuação</div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:14px;background:var(--surf);border-radius:12px;border:1px solid var(--border)">
+        <span style="font-size:28px">⚽</span>
+        <div><div style="font-size:16px;font-weight:800;color:var(--gold)">Partidas</div><div style="font-size:12px;color:var(--dim)">16 avos até a Final — 31 jogos</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px;background:#1A1400;border:1px solid #FFD70044;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--gold)">5</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">🎯 Placar exato</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">Você: 2×1 · Real: 2×1</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#0D2010;border:1px solid #1DB95444;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:#1DB954">3</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">✅ Resultado + gols de 1 time certos</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">Você: 2×1 · Real: 2×0</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--text)">2</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">✅ Resultado correto</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">Vitória / Empate / Derrota</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#1A1400;border:1px solid #FF6E2844;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:#FF6E28">1</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">〽️ Gols de 1 time certos, resultado errado</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">Você: 2×1 · Real: 2×3</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#1A0D0D;border:1px solid #33333344;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:#555">0</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">❌ Errou tudo</div></div></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:14px;background:var(--surf);border-radius:12px;border:1px solid var(--border)">
+        <span style="font-size:28px">🏅</span>
+        <div><div style="font-size:16px;font-weight:800;color:#FF6E28">Classificado por Jogo</div><div style="font-size:12px;color:var(--dim)">Quem avança em cada duelo</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px;background:#0D2010;border:1px solid #1DB95444;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:#1DB954">2</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">✅ Acertou quem avança</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">Independente do placar</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#1A0D0D;border:1px solid #33333344;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:#555">0</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">❌ Errou quem avança</div></div></div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:14px;background:var(--surf);border-radius:12px;border:1px solid var(--border)">
+        <span style="font-size:28px">🥇</span>
+        <div><div style="font-size:16px;font-weight:800;color:var(--gold)">Pódio Final</div><div style="font-size:12px;color:var(--dim)">Campeão · Vice · 3º Lugar</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px;background:#1A1400;border:1px solid #FFD70044;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--gold)">20</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">🏆 Acertou os 3 na ordem exata</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">Campeão, Vice e 3º corretos</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#1A1400;border:1px solid #FFD70033;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:var(--gold)">15</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">🎯 Acertou 2 na ordem certa</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">2 dos 3 na posição correta</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#0D2010;border:1px solid #1DB95433;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:#1DB954">10</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">✅ Acertou 1 na ordem certa</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">1 dos 3 na posição correta</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#1A1400;border:1px solid #FF6E2833;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:#FF6E28">3</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">〽️ Acertou fora da ordem (por acerto)</div><div style="font-size:11px;color:var(--dim);font-family:var(--mono)">Ex: palpitou Campeão mas ficou Vice → 3pts</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;background:#1A0D0D;border:1px solid #33333344;border-radius:10px;padding:12px 14px"><div style="text-align:center;width:44px;flex-shrink:0"><div style="font-family:var(--mono);font-size:26px;font-weight:700;color:#555">0</div><div style="font-size:10px;color:var(--dim)">pts</div></div><div style="width:1px;height:34px;background:var(--border)"></div><div><div style="font-size:13px;font-weight:700">❌ Nenhum acerto</div></div></div>
+      </div>
+
+      <div style="background:#1A1400;border:1px solid var(--gold-dim);border-radius:12px;padding:16px;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:12px">Pontuação máxima total</div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--dim)">Placares (31 jogos × 5pts)</span><span style="font-family:var(--mono);color:var(--gold)">155</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--dim)">Classificados (30 jogos × 2pts)</span><span style="font-family:var(--mono);color:var(--gold)">60</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--dim)">Pódio final</span><span style="font-family:var(--mono);color:var(--gold)">20</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:15px;font-weight:800"><span>🏆 Total máximo</span><span style="font-family:var(--mono);color:var(--gold);font-size:22px">235 pts</span></div>
+      </div>
+      <div style="background:#0D1E10;border:1px solid #1DB954;border-radius:10px;padding:14px;font-size:12px;color:#90E8B0;line-height:1.6">
+        <strong style="color:#1DB954">Desempate no ranking</strong> — critério 1: mais placares exatos (5pts). Critério 2: mais resultados corretos (2pts).
+      </div>
+    </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay hidden" id="modal" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <h3 id="modal-title">Palpites</h3>
+        <button class="modal-close" onclick="document.getElementById('modal').classList.add('hidden')">✕ Fechar</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SCRIPT_URL="https://script.google.com/macros/s/AKfycby-kB0lW-h9T4vsHk-Y0CkJaqKwev8bijdHFqSi-_iDXg9I2EOcDlfOSoG7Uyn2kfq0/exec";
+const ADMIN_PASS="copa2026";
+
+// ── FASES ─────────────────────────────────────────────────────────────────────
+const PHASES={
+  R16:  {label:"16 Avos",  lock:new Date("2026-06-28T16:00:00-03:00")}, // 28/Jun 16h
+  R8:   {label:"Oitavas",  lock:new Date("2026-07-04T17:00:00-03:00")}, // 4/Jul 17h
+  QF:   {label:"Quartas",  lock:new Date("2026-07-09T17:00:00-03:00")}, // 9/Jul 17h
+  SF:   {label:"Semifinal",lock:new Date("2026-07-14T16:00:00-03:00")}, // 14/Jul 16h
+  "3RD":{label:"3º Lugar", lock:new Date("2026-07-18T17:00:00-03:00")}, // 18/Jul 17h
+  FINAL:{label:"Final",    lock:new Date("2026-07-19T16:00:00-03:00")}, // 19/Jul 16h
+};
+const PODIO_LOCK=new Date("2026-07-04T17:00:00-03:00"); // trava no início das oitavas — 4/Jul 17h
+
+// ── CHAVEAMENTO ───────────────────────────────────────────────────────────────
+// Estrutura: cada jogo tem feeders (quais jogos alimentam este confronto)
+// Será configurado após 27/Jun com o chaveamento oficial da FIFA
+// Por ora: 16 jogos dos 16 avos preenchidos manualmente, fases seguintes progressão automática
+
+// Jogos — chaveamento oficial confirmado Sofascore (28/Jun/2026)
+let MATCHES = [
+  // 16 AVOS — ordem espelha o chaveamento oficial da FIFA
+  // 16 AVOS → alimentam as OITAVAS (R8)
+  {id:"R16_01",phase:"R16",date:"29/Jun",time:"17h30",home:"Alemanha",       away:"Paraguai",      next:"R8_01",slot:"home"},
+  {id:"R16_02",phase:"R16",date:"30/Jun",time:"18h",  home:"França",          away:"Suécia",        next:"R8_01",slot:"away"},
+  {id:"R16_03",phase:"R16",date:"28/Jun",time:"16h",  home:"África do Sul",   away:"Canadá",        next:"R8_02",slot:"home"},
+  {id:"R16_04",phase:"R16",date:"29/Jun",time:"22h",  home:"Holanda",         away:"Marrocos",      next:"R8_02",slot:"away"},
+  {id:"R16_05",phase:"R16",date:"02/Jul",time:"20h",  home:"Portugal",        away:"Croácia",       next:"R8_03",slot:"home"},
+  {id:"R16_06",phase:"R16",date:"02/Jul",time:"16h",  home:"Espanha",         away:"Áustria",       next:"R8_03",slot:"away"},
+  {id:"R16_07",phase:"R16",date:"01/Jul",time:"21h",  home:"Estados Unidos",  away:"Bósnia e Herz.",next:"R8_04",slot:"home"},
+  {id:"R16_08",phase:"R16",date:"01/Jul",time:"17h",  home:"Bélgica",         away:"Senegal",       next:"R8_04",slot:"away"},
+  {id:"R16_09",phase:"R16",date:"29/Jun",time:"14h",  home:"Brasil",          away:"Japão",         next:"R8_05",slot:"home"},
+  {id:"R16_10",phase:"R16",date:"30/Jun",time:"14h",  home:"Costa do Marfim", away:"Noruega",       next:"R8_05",slot:"away"},
+  {id:"R16_11",phase:"R16",date:"30/Jun",time:"22h",  home:"México",          away:"Equador",       next:"R8_06",slot:"home"},
+  {id:"R16_12",phase:"R16",date:"01/Jul",time:"13h",  home:"Inglaterra",      away:"RD Congo",      next:"R8_06",slot:"away"},
+  {id:"R16_13",phase:"R16",date:"03/Jul",time:"19h",  home:"Argentina",       away:"Cabo Verde",    next:"R8_07",slot:"home"},
+  {id:"R16_14",phase:"R16",date:"03/Jul",time:"15h",  home:"Austrália",       away:"Egito",         next:"R8_07",slot:"away"},
+  {id:"R16_15",phase:"R16",date:"02/Jul",time:"00h",  home:"Suíça",           away:"Argélia",       next:"R8_08",slot:"home"},
+  {id:"R16_16",phase:"R16",date:"02/Jul",time:"20h",  home:"Colômbia",        away:"Gana",          next:"R8_08",slot:"away"},
+  // OITAVAS (4-7/Jul) — alimentam as QUARTAS (QF)
+  {id:"R8_01",phase:"R8",date:"04/Jul",time:"17h",home:"",away:"",next:"QF_01",slot:"home"},
+  {id:"R8_02",phase:"R8",date:"04/Jul",time:"21h",home:"",away:"",next:"QF_01",slot:"away"},
+  {id:"R8_03",phase:"R8",date:"05/Jul",time:"17h",home:"",away:"",next:"QF_02",slot:"home"},
+  {id:"R8_04",phase:"R8",date:"05/Jul",time:"21h",home:"",away:"",next:"QF_02",slot:"away"},
+  {id:"R8_05",phase:"R8",date:"06/Jul",time:"17h",home:"",away:"",next:"QF_03",slot:"home"},
+  {id:"R8_06",phase:"R8",date:"06/Jul",time:"21h",home:"",away:"",next:"QF_03",slot:"away"},
+  {id:"R8_07",phase:"R8",date:"07/Jul",time:"17h",home:"",away:"",next:"QF_04",slot:"home"},
+  {id:"R8_08",phase:"R8",date:"07/Jul",time:"21h",home:"",away:"",next:"QF_04",slot:"away"},
+  // QUARTAS (9-11/Jul) — 4 jogos alimentam as SEMIS
+  {id:"QF_01",phase:"QF",date:"09/Jul",time:"17h",home:"",away:"",next:"SF_01",slot:"home"},
+  {id:"QF_02",phase:"QF",date:"09/Jul",time:"21h",home:"",away:"",next:"SF_01",slot:"away"},
+  {id:"QF_03",phase:"QF",date:"10/Jul",time:"17h",home:"",away:"",next:"SF_02",slot:"home"},
+  {id:"QF_04",phase:"QF",date:"11/Jul",time:"18h",home:"",away:"",next:"SF_02",slot:"away"},
+  // SEMIFINAL (14-15/Jul) — 2 jogos
+  {id:"SF_01",phase:"SF",date:"14/Jul",time:"16h",home:"",away:"",next:"FINAL_01",slot:"home"},
+  {id:"SF_02",phase:"SF",date:"15/Jul",time:"16h",home:"",away:"",next:"FINAL_01",slot:"away"},
+  // 3º LUGAR (18/Jul) — perdedores das semis
+  {id:"3RD_01",phase:"3RD",date:"18/Jul",time:"17h",home:"",away:""},
+  // FINAL (19/Jul)
+  {id:"FINAL_01",phase:"FINAL",date:"19/Jul",time:"16h",home:"",away:""},
+];
+
+const ALL_TEAMS=["México","África do Sul","Coreia do Sul","Rep. Tcheca","Canadá","Bósnia e Herz.","Catar","Suíça","Brasil","Marrocos","Haiti","Escócia","Estados Unidos","Paraguai","Austrália","Turquia","Alemanha","Curaçao","Costa do Marfim","Equador","Holanda","Japão","Tunísia","Suécia","Bélgica","Egito","Irã","Nova Zelândia","Espanha","Cabo Verde","Arábia Saudita","Uruguai","França","Senegal","Noruega","Iraque","Argentina","Argélia","Áustria","Jordânia","Portugal","RD Congo","Uzbequistão","Colômbia","Inglaterra","Croácia","Gana","Panamá"];
+
+const FLAGS={"México":"🇲🇽","África do Sul":"🇿🇦","Coreia do Sul":"🇰🇷","Rep. Tcheca":"🇨🇿","Canadá":"🇨🇦","Bósnia e Herz.":"🇧🇦","Catar":"🇶🇦","Suíça":"🇨🇭","Brasil":"🇧🇷","Marrocos":"🇲🇦","Haiti":"🇭🇹","Escócia":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Estados Unidos":"🇺🇸","Paraguai":"🇵🇾","Austrália":"🇦🇺","Turquia":"🇹🇷","Alemanha":"🇩🇪","Curaçao":"🇨🇼","Costa do Marfim":"🇨🇮","Equador":"🇪🇨","Holanda":"🇳🇱","Japão":"🇯🇵","Tunísia":"🇹🇳","Suécia":"🇸🇪","Bélgica":"🇧🇪","Egito":"🇪🇬","Irã":"🇮🇷","Nova Zelândia":"🇳🇿","Espanha":"🇪🇸","Cabo Verde":"🇨🇻","Arábia Saudita":"🇸🇦","Uruguai":"🇺🇾","França":"🇫🇷","Senegal":"🇸🇳","Noruega":"🇳🇴","Iraque":"🇮🇶","Argentina":"🇦🇷","Argélia":"🇩🇿","Áustria":"🇦🇹","Jordânia":"🇯🇴","Portugal":"🇵🇹","RD Congo":"🇨🇩","Uzbequistão":"🇺🇿","Colômbia":"🇨🇴","Inglaterra":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croácia":"🇭🇷","Gana":"🇬🇭","Panamá":"🇵🇦"};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const LS_U="elim_user",LS_G="elim_g",LS_P="elim_podio";
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+let S={user:null,guesses:{},podio:{},results:{},participants:[],phase:"R16",admin:false};
+
+const phLocked=ph=>new Date()>=PHASES[ph].lock;
+const podioLocked=()=>new Date()>=PODIO_LOCK;
+
+// ── SCORING ───────────────────────────────────────────────────────────────────
+function scoreMatch(g,a){
+  if(!a||a.home===""||a.away==="") return null;
+  const gH=parseInt(g?.home),gA=parseInt(g?.away),aH=parseInt(a.home),aA=parseInt(a.away);
+  if(isNaN(gH)||isNaN(gA)) return 0;
+  if(gH===aH&&gA===aA) return 5;
+  const gR=gH>gA?1:gH<gA?-1:0,aR=aH>aA?1:aH<aA?-1:0,rOk=gR===aR,hOk=gH===aH,aOk=gA===aA;
+  if(rOk&&(hOk||aOk)) return 3;
+  if(rOk) return 2;
+  if(hOk||aOk) return 1;
+  return 0;
+}
+function scoreQual(gq,aq){
+  if(!aq||aq==="") return null;
+  if(!gq||gq==="") return 0;
+  return gq===aq?2:0;
+}
+function scorePodio(gp,ap,pos){
+  // pontuação definida depois — por ora 10/5/3
+  if(!ap||ap==="") return null;
+  if(!gp||gp==="") return 0;
+  const pts={champion:20,runner:15,third:10};
+  return gp===ap?pts[pos]:0;
+}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function api(params){
+  const r=await fetch(SCRIPT_URL+"?"+new URLSearchParams(params).toString());
+  return r.json();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let tt;
+function toast(msg,type="ok"){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className="toast show "+type;
+  clearTimeout(tt);tt=setTimeout(()=>t.className="toast",4000);
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+async function doLogin(){
+  const name=document.getElementById("name-inp").value.trim();
+  if(!name) return;
+  const btn=document.getElementById("login-btn");
+  btn.disabled=true;btn.textContent="Carregando...";
+  try{
+    const d=await api({action:"getElimGuesses",name});
+    S.guesses=d.guesses||{};
+    S.podio=d.podio||{};
+  }catch{
+    S.guesses=lsGet(LS_G)||{};
+    S.podio=lsGet(LS_P)||{};
+  }
+  S.user=name;
+  lsSet(LS_U,name);
+  enterApp();
+  btn.disabled=false;btn.textContent="Entrar";
+}
+
+function logout(){
+  S={user:null,guesses:{},podio:{},results:{},participants:[],phase:"R16",admin:false};
+  lsSet(LS_U,null);lsSet(LS_G,null);lsSet(LS_P,null);
+  ["logout-btn","refresh-btn"].forEach(id=>document.getElementById(id).classList.add("hidden"));
+  document.getElementById("screen-login").classList.remove("hidden");
+  document.getElementById("screen-main").classList.add("hidden");
+  document.getElementById("name-inp").value="";
+  renderPlist();
+}
+
+function enterApp(){
+  document.getElementById("screen-login").classList.add("hidden");
+  document.getElementById("screen-main").classList.remove("hidden");
+  ["logout-btn","refresh-btn"].forEach(id=>document.getElementById(id).classList.remove("hidden"));
+  renderAll();
+  poll();
+}
+
+// ── POLL ─────────────────────────────────────────────────────────────────────
+async function poll(){
+  try{
+    const d=await api({action:"getElimPublicData"});
+    if(d.results) S.results=d.results;
+    if(d.participants) S.participants=d.participants;
+    if(d.teams) applyTeams(d.teams);
+    propagateQualifiers();
+    renderAll();
+  }catch{}
+  setTimeout(poll,30000);
+}
+
+async function forceRefresh(){
+  const btn=document.getElementById("refresh-btn");
+  btn.textContent="⏳";btn.disabled=true;
+  try{
+    const[d,u]=await Promise.all([
+      api({action:"getElimPublicData"}),
+      api({action:"getElimGuesses",name:S.user})
+    ]);
+    if(d.results) S.results=d.results;
+    if(d.participants) S.participants=d.participants;
+    if(d.teams) applyTeams(d.teams);
+    if(u.guesses) S.guesses=u.guesses;
+    if(u.podio) S.podio=u.podio;
+    propagateQualifiers();
+    renderAll();
+    toast("Dados atualizados! ✅","ok");
+  }catch{toast("Erro ao atualizar.","err");}
+  btn.textContent="🔄";btn.disabled=false;
+}
+
+function applyTeams(teams){
+  if(!teams) return;
+  Object.entries(teams).forEach(([id,t])=>{
+    const m=MATCHES.find(x=>x.id===id);
+    if(m){if(t.home) m.home=t.home; if(t.away) m.away=t.away;}
+  });
+}
+
+// Propagate qualifiers to next phase
+function propagateQualifiers(){
+  MATCHES.forEach(m=>{
+    const res=S.results[m.id];
+    if(res?.qualifier&&m.next){
+      const next=MATCHES.find(x=>x.id===m.next);
+      if(next&&!next[m.slot]) next[m.slot]=res.qualifier;
+    }
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderAll(){
+  renderPhaseTabs();renderMatches();renderPodio();renderRanking();renderResults();renderPlist();
+}
+function switchTab(id,btn){
+  ["palpites","podio","ranking","jogos","pontos"].forEach(t=>document.getElementById("tab-"+t).classList.toggle("hidden",t!==id));
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+// ── PHASE TABS ────────────────────────────────────────────────────────────────
+function renderPhaseTabs(){
+  document.getElementById("phase-tabs").innerHTML=Object.entries(PHASES).map(([ph,{label}])=>{
+    const lk=phLocked(ph);
+    const ms=MATCHES.filter(m=>m.phase===ph);
+    const f=ms.filter(m=>S.guesses[m.id]?.home!==undefined&&S.guesses[m.id].home!=="").length;
+    return`<button class="phase-btn ${S.phase===ph?"active":""} ${lk?"lk":""}" onclick="setPhase('${ph}')">
+      ${label} ${lk?"🔒":`${f}/${ms.length}`}
+    </button>`;
+  }).join("");
+}
+function setPhase(ph){S.phase=ph;renderPhaseTabs();renderMatches();}
+
+// ── MATCHES ───────────────────────────────────────────────────────────────────
+function renderMatches(){
+  const ph=S.phase,lk=phLocked(ph);
+  const ms=MATCHES.filter(m=>m.phase===ph);
+  const byDate={};
+  ms.forEach(m=>{if(!byDate[m.date])byDate[m.date]=[];byDate[m.date].push(m);});
+  let html="";
+  Object.entries(byDate).forEach(([date,games])=>{
+    html+=`<div class="phase-hdr-row"><h3>${PHASES[ph].label}</h3><span class="phase-date-lbl">${date}</span></div>`;
+    games.forEach(m=>{
+      const v=S.guesses[m.id]||{};
+      const res=S.results[m.id]||{};
+      const pts=res.home!==""?scoreMatch(v,res):null;
+      const hv=v.home??"",av=v.away??"";
+      const hasTeams=m.home&&m.away;
+      const hf=FLAGS[m.home]||"🏳",af=FLAGS[m.away]||"🏳";
+      // result row
+      let rr="";
+      if(res.home!==""){
+        const pc=pts!==null?`pts-${pts}`:"",pl=pts===5?"🎯":pts>=2?"✅":pts===1?"〽️":"❌";
+        const qpts=scoreQual(v.qualifier,res.qualifier);
+        const qbadge=qpts!==null?`<span class="pts-badge ${qpts===2?"pts-3":"pts-0"}" style="margin-left:4px">${qpts===2?"✅":"❌"} ${qpts}pt</span>`:"";
+        rr=`<div class="result-row">
+          <span class="result-txt">Resultado: ${res.home}×${res.away}${res.qualifier?` · ${FLAGS[res.qualifier]||""} ${res.qualifier} passou`:""}</span>
+          <span>${pts!==null?`<span class="pts-badge ${pc}">${pl} ${pts}pts</span>`:""} ${qbadge}</span>
+        </div>`;
+      }
+      // qualifier row
+      let qrow="";
+      if(hasTeams&&ph!=="3RD"&&ph!=="FINAL"){
+        const qv=v.qualifier||"";
+        const opts=[m.home,m.away].map(t=>`<option value="${t}" ${qv===t?"selected":""}>${FLAGS[t]||""} ${t}</option>`).join("");
+        qrow=`<div class="qual-row">
+          <span class="qual-lbl">🏅 Classificado:</span>
+          <select class="qual-sel" ${lk?"disabled":""} onchange="setG('${m.id}','qualifier',this.value)">
+            <option value="">— selecione —</option>${opts}
+          </select>
+        </div>`;
+      }
+      html+=`<div class="match-card ${res.home!==""?"done":""} ${lk?"lk":""}">
+        <div class="match-meta">${m.date} · ${m.time} (Brasília)</div>
+        <div class="match-row">
+          <div class="team"><span class="flag">${hf}</span><span class="tname">${m.home||"A definir"}</span></div>
+          <div class="score-pair">
+            <input class="score-inp ${hv?"hv":""}" type="number" min="0" max="20" inputmode="numeric"
+              value="${hv}" ${lk||!hasTeams?"disabled":""} ${lk?"readonly":""}
+              oninput="setG('${m.id}','home',this.value)">
+            <span class="score-sep">×</span>
+            <input class="score-inp ${av?"hv":""}" type="number" min="0" max="20" inputmode="numeric"
+              value="${av}" ${lk||!hasTeams?"disabled":""} ${lk?"readonly":""}
+              oninput="setG('${m.id}','away',this.value)">
+          </div>
+          <div class="team team-away"><span class="tname">${m.away||"A definir"}</span><span class="flag">${af}</span></div>
+        </div>
+        ${qrow}${rr}
+      </div>`;
+    });
+  });
+  document.getElementById("matches-list").innerHTML=html||`<div style="text-align:center;padding:40px;color:var(--dim)"><div style="font-size:36px;margin-bottom:12px">⏳</div><p>Confrontos serão publicados em breve.</p></div>`;
+  document.getElementById("lock-banner").classList.toggle("hidden",!lk);
+  document.getElementById("lock-banner").textContent=lk?`🔒 ${PHASES[ph].label} encerrada para palpites`:"";
+  document.getElementById("save-wrap").classList.toggle("hidden",lk);
+}
+
+function setG(id,field,val){
+  if(!S.guesses[id]) S.guesses[id]={};
+  if(field==="qualifier") S.guesses[id][field]=val;
+  else S.guesses[id][field]=val.replace(/\D/g,"").slice(0,2);
+}
+
+// ── SAVE ─────────────────────────────────────────────────────────────────────
+async function savePhase(){
+  const ph=S.phase;
+  const ms=MATCHES.filter(m=>m.phase===ph&&m.home&&m.away);
+  const rg={};ms.forEach(m=>{if(S.guesses[m.id]) rg[m.id]=S.guesses[m.id];});
+  if(!Object.keys(rg).length){toast("Preencha ao menos um palpite.","err");return;}
+  const btn=document.getElementById("save-btn");
+  btn.disabled=true;btn.textContent="Salvando...";
+  try{
+    await api({action:"saveElimGuesses",name:S.user,guesses:JSON.stringify(rg),phase:ph});
+    lsSet(LS_G,S.guesses);
+    toast(`${PHASES[ph].label} salva! ✅`,"ok");
+    renderPhaseTabs();
+  }catch{toast("Erro ao salvar.","err");}
+  btn.disabled=false;btn.textContent="💾 Salvar Palpites";
+}
+
+// ── PÓDIO ─────────────────────────────────────────────────────────────────────
+const PODIO_ITEMS=[
+  {key:"champion",label:"🥇 Campeão",pts:10},
+  {key:"runner",  label:"🥈 Vice-campeão",pts:5},
+  {key:"third",   label:"🥉 Terceiro lugar",pts:3},
+];
+function getPodioTeams(key){
+  const sfQuals=MATCHES.filter(m=>m.phase==="QF").map(m=>S.results[m.id]?.qualifier).filter(Boolean);
+  const finalQuals=MATCHES.filter(m=>m.phase==="SF").map(m=>S.results[m.id]?.qualifier).filter(Boolean);
+  const sfTeams=MATCHES.filter(m=>m.phase==="SF").flatMap(m=>[m.home,m.away]).filter(Boolean);
+  const thirdTeams=sfTeams.filter(t=>t&&!finalQuals.includes(t));
+  if(key==="third"){
+    if(thirdTeams.length>=2) return thirdTeams;
+    if(sfTeams.length>=2) return sfTeams;
+    if(sfQuals.length>=2) return sfQuals;
+  } else {
+    if(finalQuals.length>=2) return finalQuals;
+    if(sfQuals.length>=2) return sfQuals;
+  }
+  // fallback: times das oitavas
+  const r8Teams=[...new Set(MATCHES.filter(m=>m.phase==="R8").flatMap(m=>[m.home,m.away]).filter(Boolean))];
+  if(r8Teams.length>=2) return r8Teams;
+  // fallback: times dos 16 avos
+  const r16Teams=[...new Set(MATCHES.filter(m=>m.phase==="R16").flatMap(m=>[m.home,m.away]).filter(Boolean))];
+  return r16Teams.length>=2?r16Teams:ALL_TEAMS;
+}
+
+function renderPodio(){
+  const lk=podioLocked();
+  document.getElementById("podio-lock-banner").classList.toggle("hidden",!lk);
+  document.getElementById("podio-info").classList.toggle("hidden",lk);
+  document.getElementById("podio-save-wrap").classList.toggle("hidden",lk);
+  const ap=S.results.__podio||{};
+  document.getElementById("podio-list").innerHTML=PODIO_ITEMS.map(({key,label,pts})=>{
+    const gv=S.podio[key]||"";
+    const av=ap[key]||"";
+    const sc=av?scorePodio(gv,av,key):null;
+    const availTeams=getPodioTeams(key);
+    const opts=availTeams.map(t=>`<option value="${t}" ${gv===t?"selected":""}>${FLAGS[t]||""} ${t}</option>`).join("");
+    const badge=sc!==null?`<span class="pts-badge ${sc>0?"pts-5":"pts-0"}">${sc>0?"🎯":"❌"} ${sc}pts</span>`:"";
+    return`<div class="podio-card">
+      <h3>${label}</h3>
+      <select class="podio-sel" ${lk?"disabled":""} onchange="S.podio['${key}']=this.value">
+        <option value="">— selecione —</option>${opts}
+      </select>
+      ${av?`<div class="podio-result">${badge} Real: ${FLAGS[av]||""} ${av}</div>`:""}
+    </div>`;
+  }).join("");
+}
+async function savePodio(){
+  if(!Object.values(S.podio).some(v=>v)){toast("Selecione ao menos um.","err");return;}
+  try{
+    await api({action:"saveElimPodio",name:S.user,podio:JSON.stringify(S.podio)});
+    lsSet(LS_P,S.podio);
+    toast("Pódio salvo! 🏆","ok");
+  }catch{toast("Erro ao salvar.","err");}
+}
+
+// ── RANKING ───────────────────────────────────────────────────────────────────
+function renderRanking(){
+  const ap=S.results.__podio||{};
+  const ranking=S.participants.map(p=>{
+    let pts=0,exact=0,res=0,partial=0,qualPts=0,podioPts=0;
+    MATCHES.forEach(m=>{
+      const s=scoreMatch(p.guesses?.[m.id],S.results[m.id]);
+      if(s!==null){pts+=s;if(s===5)exact++;else if(s===3)res++;else if(s===1)partial++;}
+      const qs=scoreQual(p.guesses?.[m.id]?.qualifier,S.results[m.id]?.qualifier);
+      if(qs!==null){pts+=qs;qualPts+=qs;}
+    });
+    PODIO_ITEMS.forEach(({key})=>{
+      const sc=scorePodio(p.podio?.[key],ap[key],key);
+      if(sc!==null){pts+=sc;podioPts+=sc;}
+    });
+    return{name:p.name,pts,exact,res,partial,qualPts,podioPts};
+  }).sort((a,b)=>b.pts-a.pts||b.exact-a.exact);
+
+  if(!ranking.length){
+    document.getElementById("rank-list").innerHTML=`<div class="empty" style="text-align:center;padding:40px;color:var(--dim)"><div style="font-size:40px;margin-bottom:12px">📊</div><p>Nenhum participante ainda.</p></div>`;
+    return;
+  }
+  const med=["🥇","🥈","🥉"];
+  document.getElementById("rank-list").innerHTML=ranking.map((p,i)=>{
+    const pc=i===0?"rp-1":i===1?"rp-2":i===2?"rp-3":"rp-n";
+    const cc=i===0?"rank-1":i===1?"rank-2":i===2?"rank-3":"";
+    const youTag=p.name===S.user?`<span class="you-tag">você</span>`:"";
+    const vb=`<button class="view-btn" onclick="viewP('${p.name.replace(/'/g,"\\'")}')">👁 Ver</button>`;
+    return`<div class="rank-card ${cc} ${p.name===S.user?"rank-me":""}">
+      <div class="rank-pos ${pc}">${i<3?med[i]:i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${FLAGS[p.name]||""}${p.name}${youTag}</div>
+        <div class="rank-detail">🎯 ${p.exact} · ✅ ${p.res} · 〽️ ${p.partial}${p.qualPts?` · 🏅 ${p.qualPts}cl`:""}${p.podioPts?` · 🏆 ${p.podioPts}pd`:""}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div><div class="rank-pts-val">${p.pts}</div><div class="rank-pts-lbl">pts</div></div>
+        ${vb}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── VIEW PARTICIPANT ──────────────────────────────────────────────────────────
+function viewP(name){
+  const p=S.participants.find(x=>x.name===name);
+  if(!p){toast("Não encontrado.","err");return;}
+  document.getElementById("modal-title").textContent=`Palpites de ${name}`;
+  let html="";
+  Object.entries(PHASES).forEach(([ph,{label}])=>{
+    const lk=phLocked(ph);
+    const ms=MATCHES.filter(m=>m.phase===ph);
+    html+=`<div class="phase-sep">${label} ${lk?"🔒":"🟢"}</div>`;
+    if(!lk){html+=`<div class="mrow" style="color:var(--dim);font-style:italic">🔒 Visível após início da fase</div>`;return;}
+    ms.forEach(m=>{
+      const g=p.guesses?.[m.id]||{};
+      const res=S.results[m.id]||{};
+      const pts=res.home!==""?scoreMatch(g,res):null;
+      const qpts=scoreQual(g.qualifier,res.qualifier);
+      const pc=pts!==null?`pts-${pts}`:"";
+      const pl=pts===5?"🎯":pts===3||pts===2?"✅":pts===1?"〽️":pts===0?"❌":"";
+      html+=`<div class="mrow">
+        <div>
+          <div style="font-weight:600;color:var(--text)">${FLAGS[m.home]||"🏳"} ${m.home||"?"} × ${m.away||"?"} ${FLAGS[m.away]||"🏳"}</div>
+          <div style="color:var(--dim);font-size:11px">Resultado: ${res.home!==""?`${res.home}×${res.away}`:"—"}${res.qualifier?` · Passou: ${FLAGS[res.qualifier]||""} ${res.qualifier}`:""}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--mono);color:var(--gold)">${g.home??"-"} × ${g.away??"-"}</div>
+          <div style="font-size:11px;color:var(--dim)">Class: ${FLAGS[g.qualifier]||""} ${g.qualifier||"—"} ${qpts!==null?`<span class="pts-badge ${qpts===2?"pts-3":"pts-0"}">${qpts===2?"✅":"❌"}</span>`:""}</div>
+          ${pts!==null?`<span class="pts-badge ${pc}">${pl} ${pts}pts</span>`:""}
+        </div>
+      </div>`;
+    });
+  });
+  // pódio
+  const ap=S.results.__podio||{};
+  html+=`<div class="phase-sep">🥇 Pódio ${podioLocked()?"🔒":"🟢"}</div>`;
+  if(!podioLocked()){html+=`<div class="mrow" style="color:var(--dim);font-style:italic">🔒 Visível após 28/Jun 13h</div>`;}
+  else{
+    PODIO_ITEMS.forEach(({key,label})=>{
+      const gv=p.podio?.[key]||"—",av=ap[key]||"";
+      const sc=av?scorePodio(p.podio?.[key],av,key):null;
+      html+=`<div class="mrow"><span style="color:var(--dim)">${label}</span><div style="text-align:right"><span style="color:var(--text)">${FLAGS[gv]||""} ${gv}</span>${sc!==null?`<span class="pts-badge ${sc>0?"pts-5":"pts-0"}" style="margin-left:6px">${sc>0?"🎯":"❌"} ${sc}pts</span>`:""}</div></div>`;
+    });
+  }
+  document.getElementById("modal-body").innerHTML=html;
+  document.getElementById("modal").classList.remove("hidden");
+}
+
+// ── ADMIN / RESULTS ───────────────────────────────────────────────────────────
+function toggleAdmin(){
+  const cb=document.getElementById("admin-chk");
+  if(cb.checked){
+    const pw=prompt("Senha:");
+    if(pw!==ADMIN_PASS){cb.checked=false;toast("Senha incorreta.","err");return;}
+  }
+  S.admin=cb.checked;renderResults();
+}
+
+function renderResults(){
+  let html="";
+  Object.entries(PHASES).forEach(([ph,{label}])=>{
+    const ms=MATCHES.filter(m=>m.phase===ph);
+    html+=`<div style="margin-bottom:24px"><div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--dim);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">${label} ${phLocked(ph)?"🔒":"🟢"}</div>`;
+    ms.forEach(m=>{
+      const res=S.results[m.id]||{};
+      const done=res.home!==undefined&&res.home!=="";
+      const hasTeams=m.home&&m.away;
+      const teams=hasTeams?[m.home,m.away]:[];
+      const qualOpts=teams.map(t=>`<option value="${t}" ${res.qualifier===t?"selected":""}>${FLAGS[t]||""} ${t}</option>`).join("");
+      html+=`<div class="match-card ${done?"done":""}">
+        <div class="match-meta">${m.date} · ${m.time} · ${label}</div>
+        <div class="match-row">
+          <div class="team"><span class="flag">${FLAGS[m.home]||"🏳"}</span><span class="tname">${m.home||"A definir"}</span></div>
+          <div class="score-pair">
+            <input class="score-inp ${done?"hv":""}" type="number" min="0" max="20" inputmode="numeric"
+              value="${res.home??""}" ${!S.admin?"disabled":""}
+              onblur="saveRes('${m.id}','home',this.value)">
+            <span class="score-sep">×</span>
+            <input class="score-inp ${done?"hv":""}" type="number" min="0" max="20" inputmode="numeric"
+              value="${res.away??""}" ${!S.admin?"disabled":""}
+              onblur="saveRes('${m.id}','away',this.value)">
+          </div>
+          <div class="team team-away"><span class="tname">${m.away||"A definir"}</span><span class="flag">${FLAGS[m.away]||"🏳"}</span></div>
+        </div>
+        ${hasTeams&&ph!=="3RD"&&ph!=="FINAL"?`<div class="qual-row">
+          <span class="qual-lbl">🏅 Classificado:</span>
+          <select class="qual-sel" ${!S.admin?"disabled":""} onchange="saveRes('${m.id}','qualifier',this.value)">
+            <option value="">— selecione —</option>${qualOpts}
+          </select>
+        </div>`:""}
+        ${S.admin&&!hasTeams?`<div class="team-inputs">
+          <input class="team-inp" placeholder="Time casa" value="${m.home}"
+            onblur="saveTeam('${m.id}','home',this.value)">
+          <input class="team-inp" placeholder="Time fora" value="${m.away}"
+            onblur="saveTeam('${m.id}','away',this.value)">
+        </div>`:""}
+      </div>`;
+    });
+    html+="</div>";
+  });
+  // Pódio admin
+  const ap=S.results.__podio||{};
+  html+=`<div style="margin-bottom:24px"><div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--dim);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">🥇 Resultado do Pódio</div>`;
+  PODIO_ITEMS.forEach(({key,label})=>{
+    const av=ap[key]||"";
+    const opts=ALL_TEAMS.map(t=>`<option value="${t}" ${av===t?"selected":""}>${FLAGS[t]||""} ${t}</option>`).join("");
+    html+=`<div class="podio-card">
+      <h3>${label}</h3>
+      <select class="podio-sel" ${!S.admin?"disabled":""} onchange="savePodioResult('${key}',this.value)">
+        <option value="">— selecione —</option>${opts}
+      </select>
+    </div>`;
+  });
+  html+="</div>";
+  document.getElementById("results-list").innerHTML=html;
+}
+
+async function saveRes(id,field,val){
+  if(!S.admin) return;
+  if(!S.results[id]) S.results[id]={};
+  S.results[id][field]=val;
+  try{await api({action:"saveElimResult",matchId:id,field,value:val});}
+  catch{toast("Erro ao salvar resultado.","err");return;}
+  // Se salvou qualifier, propaga para próxima fase
+  if(field==="qualifier"){
+    propagateQualifiers();
+    renderMatches();
+  }
+  renderRanking();renderResults();
+}
+
+async function saveTeam(id,side,val){
+  if(!S.admin||!val.trim()) return;
+  const m=MATCHES.find(x=>x.id===id);
+  if(m) m[side]=val.trim();
+  try{await api({action:"saveElimTeam",matchId:id,side,name:val.trim()});}
+  catch{toast("Erro ao salvar time.","err");return;}
+  renderMatches();renderResults();
+}
+
+async function savePodioResult(key,val){
+  if(!S.admin) return;
+  if(!S.results.__podio) S.results.__podio={};
+  S.results.__podio[key]=val;
+  try{await api({action:"saveElimResult",matchId:"__podio",field:key,value:val});}
+  catch{toast("Erro ao salvar.","err");return;}
+  renderPodio();renderRanking();
+}
+
+// ── PARTICIPANTS ──────────────────────────────────────────────────────────────
+function renderPlist(){
+  const el=document.getElementById("plist"),sec=document.getElementById("plist-sec");
+  if(!S.participants.length){sec.classList.add("hidden");return;}
+  sec.classList.remove("hidden");
+  el.innerHTML=S.participants.map(p=>`
+    <div class="pitem" onclick="document.getElementById('name-inp').value='${p.name.replace(/'/g,"\\'")}'"">
+      <span class="pitem-name">${p.name}</span>
+      <span class="pitem-info">${Object.keys(p.guesses||{}).length} jogos palpitados</span>
+    </div>`).join("");
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(async()=>{
+  const saved=lsGet(LS_U);
+  if(saved){
+    S.user=saved;
+    S.guesses=lsGet(LS_G)||{};
+    S.podio=lsGet(LS_P)||{};
+    try{
+      const[d,u]=await Promise.all([
+        api({action:"getElimPublicData"}),
+        api({action:"getElimGuesses",name:saved})
+      ]);
+      if(d.results) S.results=d.results;
+      if(d.participants) S.participants=d.participants;
+      if(d.teams) applyTeams(d.teams);
+      if(u.guesses) S.guesses=u.guesses;
+      if(u.podio) S.podio=u.podio;
+      propagateQualifiers();
+    }catch{}
+    ["logout-btn","refresh-btn"].forEach(id=>document.getElementById(id).classList.remove("hidden"));
+    document.getElementById("screen-login").classList.add("hidden");
+    document.getElementById("screen-main").classList.remove("hidden");
+    renderAll();poll();return;
+  }
+  try{
+    const d=await api({action:"getElimPublicData"});
+    if(d.participants) S.participants=d.participants;
+    if(d.teams) applyTeams(d.teams);
+  }catch{}
+  renderPlist();
+})();
+</script>
+</body>
+</html>
