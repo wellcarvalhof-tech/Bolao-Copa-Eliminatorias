@@ -1,1 +1,0 @@
-# Bol-o-Copa-Eliminat-rias
