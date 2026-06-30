@@ -639,24 +639,22 @@ const PODIO_ITEMS=[
   {key:"third",   label:"🥉 Terceiro lugar",pts:3},
 ];
 function getPodioTeams(key){
-  const sfQuals=MATCHES.filter(m=>m.phase==="QF").map(m=>S.results[m.id]?.qualifier).filter(Boolean);
-  const finalQuals=MATCHES.filter(m=>m.phase==="SF").map(m=>S.results[m.id]?.qualifier).filter(Boolean);
-  const sfTeams=MATCHES.filter(m=>m.phase==="SF").flatMap(m=>[m.home,m.away]).filter(Boolean);
-  const thirdTeams=sfTeams.filter(t=>t&&!finalQuals.includes(t));
-  if(key==="third"){
-    if(thirdTeams.length>=2) return thirdTeams;
-    if(sfTeams.length>=2) return sfTeams;
-    if(sfQuals.length>=2) return sfQuals;
-  } else {
-    if(finalQuals.length>=2) return finalQuals;
-    if(sfQuals.length>=2) return sfQuals;
-  }
-  // fallback: times das oitavas
-  const r8Teams=[...new Set(MATCHES.filter(m=>m.phase==="R8").flatMap(m=>[m.home,m.away]).filter(Boolean))];
-  if(r8Teams.length>=2) return r8Teams;
-  // fallback: times dos 16 avos
-  const r16Teams=[...new Set(MATCHES.filter(m=>m.phase==="R16").flatMap(m=>[m.home,m.away]).filter(Boolean))];
-  return r16Teams.length>=2?r16Teams:ALL_TEAMS;
+  // Sempre mostra todos os 32 times dos 16 avos — eliminados ficam marcados
+  const all=[...new Set(MATCHES.filter(m=>m.phase==="R16").flatMap(m=>[m.home,m.away]).filter(Boolean))];
+  const pool = all.length>=2 ? all : ALL_TEAMS;
+  const eliminated=new Set();
+  ["R16","R8","QF","SF"].forEach(ph=>{
+    MATCHES.filter(m=>m.phase===ph).forEach(m=>{
+      const q=S.results[m.id]?.qualifier;
+      if(q&&m.home&&m.away) eliminated.add(m.home===q?m.away:m.home);
+    });
+  });
+  return {teams:pool, eliminated};
+}
+function _unused_old(){
+  let pool=[];
+
+  return pool;
 }
 
 function renderPodio(){
@@ -669,8 +667,14 @@ function renderPodio(){
     const gv=S.podio[key]||"";
     const av=ap[key]||"";
     const sc=av?scorePodio(gv,av,key):null;
-    const availTeams=getPodioTeams(key);
-    const opts=availTeams.map(t=>`<option value="${t}" ${gv===t?"selected":""}>${FLAGS[t]||""} ${t}</option>`).join("");
+    const podioResult=getPodioTeams(key);
+    const availTeams=Array.isArray(podioResult)?podioResult:podioResult.teams;
+    const eliminated=podioResult.eliminated||new Set();
+    const opts=availTeams.map(t=>{
+      const isOut=eliminated.has(t)&&gv!==t;
+      const label=isOut?`${FLAGS[t]||""} ${t} ✗`:`${FLAGS[t]||""} ${t}`;
+      return `<option value="${t}" ${gv===t?"selected":""} ${isOut?'style="color:#888"':""}>${label}</option>`;
+    }).join("");
     const badge=sc!==null?`<span class="pts-badge ${sc>0?"pts-5":"pts-0"}">${sc>0?"🎯":"❌"} ${sc}pts</span>`:"";
     return`<div class="podio-card">
       <h3>${label}</h3>
